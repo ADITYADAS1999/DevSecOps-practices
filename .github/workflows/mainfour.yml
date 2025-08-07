@@ -37,10 +37,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4.3.0
         with:
-          docker_version: '25.0.5'
+          docker_version: '24.0.9'
 
       - name: Build Docker Image
         run: docker build -f Dockerfile -t myapp:latest .
