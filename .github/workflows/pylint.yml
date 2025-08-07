@@ -82,24 +82,8 @@ jobs:
           
           echo ${{ secrets.REPO_PWD }} | docker login -u ${{ secrets.REPO_USER }} --password-stdin
 
-          docker scout quickview myapp
-          docker scout cves myapp
+          docker scout quickview myapp:latest
+          docker scout cves myapp:latest
 
 
 
-      - name: Docker Scout Scan
-        uses: docker/scout-action@v1.0.9
-        with:
-          dockerhub-user: ${{ secrets.REPO_USER }}
-          dockerhub-password: ${{ secrets.REPO_PWD }}
-          command: quickview,cves
-          only-severities: critical,high
-          sarif-file: scout-report.sarif
-          exit-code: true
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: docker-scout-findings
-          path: scout-report.sarif
