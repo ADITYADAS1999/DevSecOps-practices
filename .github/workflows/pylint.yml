@@ -82,8 +82,8 @@ jobs:
           
           echo ${{ secrets.REPO_PWD }} | docker login -u ${{ secrets.REPO_USER }} --password-stdin
 
-          docker scout quickview myapp:latest
-          docker scout cves myapp:latest
+          docker scout quickview myapp
+          docker scout cves myapp
 
 
 
