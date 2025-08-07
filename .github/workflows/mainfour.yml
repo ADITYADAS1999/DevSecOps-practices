@@ -1,19 +1,18 @@
-name: CI Pipeline
+name: CI
 
 on: [push]
 
 jobs:
-  # === STATIC CODE ANALYSIS (BANDIT) ===
   sast_scan:
-    name: Run Bandit SAST Scan
+    name: Run Bandit Scan
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
 
@@ -21,39 +20,37 @@ jobs:
         run: pip install bandit
 
       - name: Run Bandit Scan
-        run: |
-          bandit -ll -ii -r . -f json -o bandit-report.json
+        run: bandit -ll -ii -r . -f json -o bandit-report.json
 
-      - name: Upload Bandit Report as Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: bandit-findings
           path: bandit-report.json
 
-  # === DOCKER IMAGE SCAN (DOCKER SCOUT) ===
   image_scan:
-    name: Build Image and Scan with Docker Scout
+    name: Build Image and Run Image Scan
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker
         uses: docker/setup-buildx-action@v3
         with:
-          driver-opts: image=moby/buildkit:latest
+          docker_version: '25.0.5'
 
       - name: Build Docker Image
         run: docker build -f Dockerfile -t myapp:latest .
 
-      - name: Install Docker Scout CLI
+      - name: Docker Scout Scan
         run: |
           curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
           sh install-scout.sh
-
-      - name: Run Docker Scout QuickView and CVE Scan
-        run: |
-          docker scout quickview myapp:latest
-          docker scout cves myapp:latest
+          
+          echo ${{ secrets.REPO_PWD }} | docker login -u ${{ secrets.REPO_USER }} --password-stdin
+          
+          docker scout quickview
+          docker scout cves
